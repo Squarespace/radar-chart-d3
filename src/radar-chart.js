@@ -7,6 +7,7 @@ var RadarChart = {
     factorLegend: 1,
     levels: 3,
     levelTick: false,
+    hideOuterLevel: false,
     TickLength: 10,
     maxValue: 0,
     radians: 2 * Math.PI,
@@ -18,6 +19,9 @@ var RadarChart = {
     backgroundTooltipColor: "#555",
     backgroundTooltipOpacity: "0.7",
     tooltipColor: "white",
+    tooltipFormat: function(d) { return d.value },
+    pointTooltips: true,
+    areaTooltips: false,
     axisJoin: function(d, i) {
       return d.className || i;
     },
@@ -100,6 +104,9 @@ var RadarChart = {
         levelGroups.exit().remove();
 
         levelGroups.attr('class', function(d, i) {
+          if (cfg.hideOuterLevel && i === cfg.levels - 1){
+            return 'level-group level-group-' + i + ' hidden';
+          }
           return 'level-group level-group-' + i;
         });
 
@@ -193,7 +200,12 @@ var RadarChart = {
               })
               .text(function(d) { return d.name; })
               .attr('x', function(d, i){ return d.xOffset+ (cfg.w/2-radius2)+getHorizontalPosition(i, radius2, cfg.factorLegend); })
-              .attr('y', function(d, i){ return d.yOffset+ (cfg.h/2-radius2)+getVerticalPosition(i, radius2, cfg.factorLegend); });
+              .attr('y', function(d, i){
+                var p = getHorizontalPosition(i, 0.5);
+                var offset = 0;
+                if (p < 0.4 || p > 0.6) offset += 12;
+                return d.yOffset+ (cfg.h/2-radius2)+getVerticalPosition(i, radius2, cfg.factorLegend) - offset;
+              });
           }
         }
 
@@ -209,12 +221,14 @@ var RadarChart = {
         polygon.enter().append('polygon')
           .classed({area: 1, 'd3-enter': 1})
           .on('mouseover', function (dd){
+            if(!cfg.areaTooltips) return;
             d3.event.stopPropagation();
             container.classed('focus', 1);
             d3.select(this).classed('focused', 1);
             setTooltip(dd.className);
           })
           .on('mouseout', function(){
+            if(!cfg.areaTooltips) return;
             d3.event.stopPropagation();
             container.classed('focus', 0);
             d3.select(this).classed('focused', 0);
@@ -278,12 +292,14 @@ var RadarChart = {
           circle.enter().append('circle')
             .classed({circle: 1, 'd3-enter': 1})
             .on('mouseover', function(dd){
+              if(!cfg.pointTooltips) return;
               d3.event.stopPropagation();
-              setTooltip(dd[0].value);
+              setTooltip(cfg.tooltipFormat(dd[0]));
               //container.classed('focus', 1);
               //container.select('.area.radar-chart-serie'+dd[1]).classed('focused', 1);
             })
             .on('mouseout', function(dd){
+              if(!cfg.pointTooltips) return;
               d3.event.stopPropagation();
               setTooltip(false);
               container.classed('focus', 0);
