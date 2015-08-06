@@ -34,7 +34,8 @@ var RadarChart = {
     function setTooltip(msg){
       if(msg == false){
         tooltip.classed("visible", 0);
-        tooltip.select("rect").classed("visible", 0);
+        tooltip.attr("class", "tooltip");
+        tooltip.select("rect").attr("class", "toolip");
       }else{
         tooltip.classed("visible", 1);
 
@@ -53,7 +54,7 @@ var RadarChart = {
         .attr("height", bbox.height + (padding*2))
         .attr("rx","5").attr("ry","5")
         .style("fill", cfg.backgroundTooltipColor).style("opacity", cfg.backgroundTooltipOpacity);
-        tooltip.attr("transform", "translate(" + x + "," + y + ")")
+        tooltip.attr("transform", "translate(" + x + "," + (y - 15) + ")")
       }
     }
     function radar(selection) {
@@ -291,14 +292,14 @@ var RadarChart = {
 
           circle.enter().append('circle')
             .classed({circle: 1, 'd3-enter': 1})
-            .on('mouseover', function(dd){
+            .on('mouseenter', function(dd){
               if(!cfg.pointTooltips) return;
               d3.event.stopPropagation();
               setTooltip(cfg.tooltipFormat(dd[0]));
               //container.classed('focus', 1);
               //container.select('.area.radar-chart-serie'+dd[1]).classed('focused', 1);
             })
-            .on('mouseout', function(dd){
+            .on('mouseleave', function(dd){
               if(!cfg.pointTooltips) return;
               d3.event.stopPropagation();
               setTooltip(false);
